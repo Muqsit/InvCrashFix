@@ -1,0 +1,4 @@
+name: InvCrashFix
+main: muqsit\invcrashfix\Loader
+api: 3.14.0
+version: 0.0.1
