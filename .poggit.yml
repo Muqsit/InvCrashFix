@@ -5,4 +5,7 @@ branches:
 projects:
   InvCrashFix:
     path: ""
+    libs:
+      - src: muqsit/simplepackethandler/SimplePacketHandler
+        version: ^0.0.1
 ...

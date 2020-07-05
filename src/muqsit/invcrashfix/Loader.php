@@ -4,42 +4,24 @@ declare(strict_types=1);
 
 namespace muqsit\invcrashfix;
 
-use pocketmine\event\Listener;
-use pocketmine\event\server\DataPacketReceiveEvent;
-use pocketmine\event\server\DataPacketSendEvent;
+use muqsit\simplepackethandler\SimplePacketHandler;
+use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\plugin\PluginBase;
 
-final class Loader extends PluginBase implements Listener{
+final class Loader extends PluginBase{
 
-	/** @var bool */
-	private $cancel_send = true;
-
-	public function onEnable() : void{
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-	}
-
-	/**
-	 * @param DataPacketSendEvent $event
-	 * @priority NORMAL
-	 * @ignoreCancelled true
-	 */
-	public function onDataPacketSend(DataPacketSendEvent $event) : void{
-		if($this->cancel_send && $event->getPacket() instanceof ContainerClosePacket){
-			$event->setCancelled();
-		}
-	}
-
-	/**
-	 * @param DataPacketReceiveEvent $event
-	 * @priority NORMAL
-	 * @ignoreCancelled true
-	 */
-	public function onDataPacketReceive(DataPacketReceiveEvent $event) : void{
-		if($event->getPacket() instanceof ContainerClosePacket){
-			$this->cancel_send = false;
-			$event->getPlayer()->sendDataPacket($event->getPacket(), false, true);
-			$this->cancel_send = true;
-		}
+	protected function onEnable() : void{
+		static $send = false;
+		SimplePacketHandler::createInterceptor($this)
+			->interceptIncoming(static function(ContainerClosePacket $packet, NetworkSession $session) use(&$send) : bool{
+				$send = true;
+				$session->sendDataPacket($packet);
+				$send = false;
+				return true;
+			})
+			->interceptOutgoing(static function(ContainerClosePacket $packet, NetworkSession $session) use(&$send) : bool{
+				return $send;
+			});
 	}
 }
