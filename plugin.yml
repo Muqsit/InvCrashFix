@@ -1,5 +1,7 @@
+---
 name: InvCrashFix
 main: muqsit\invcrashfix\Loader
-api: 4.0.0
 version: 0.0.1
+api: 4.0.0
 author: Muqsit
+...
